@@ -1,0 +1,1 @@
+qfn.vba: call delete('/home/lzq/.vim/plugin/qfn.vim')|call delete('/home/lzq/.vim/doc/qfn.txt')

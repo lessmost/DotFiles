@@ -1,0 +1,187 @@
+# remind script file
+
+
+
+#########################################
+#
+# part of Defs.rem form remind-03.01.10 src/examples
+#
+
+################################################
+# Ensure required version of remind is used... #
+################################################
+IF version() < "03.01.05"
+   ERRMSG This file requires at least version 03.01.08 of Remind.%
+   ERRMSG This version is version [version()].
+   EXIT
+ENDIF
+
+######################################
+# Symbolic constants for weekdays... #
+######################################
+SET Sunday    0
+SET Monday    1
+SET Tuesday   2
+SET Wednesday 3
+SET Thursday  4
+SET Friday    5
+SET Saturday  6
+
+SET Sun 0
+SET Mon 1
+SET Tue 2
+SET Wed 3
+SET Thu 4
+SET Fri 5
+SET Sat 6
+
+#########################################
+# Symbolic constants for month names... #
+#########################################
+
+SET Jan 1
+SET Feb 2
+SET Mar 3
+SET Apr 4
+SET May 5
+SET Jun 6
+SET Jul 7
+SET Aug 8
+SET Sep 9
+SET Oct 10
+SET Nov 11
+SET Dec 12
+
+SET January   1
+SET February  2
+SET March     3
+SET April     4
+SET May       5
+SET June      6
+SET July      7
+SET August    8
+SET September 9
+SET October   10
+SET November  11
+SET December  12
+
+###########################################################
+# Other symbolic constants and functions for "pasting"... #
+###########################################################
+
+SET Quote CHAR(34)
+
+# Handy constants/function for specifing week of month...
+SET  Week_1		 1
+SET  Week_2		 8
+SET  Week_3		15
+SET  Week_4		22
+FSET _last(mo)		"1 " + MON((mo%12)+1) + " --7"
+
+# Handy function to provide SCANFROM dates...
+FSET _back(days)	TODAY()-days
+
+###########################################################
+# Function which returns a string in "am/pm" format based #
+# on the time.  For example, set a am_pm(NOW())...        #
+###########################################################
+
+FSET _am_pm(tm)	IIF(tm<01:00, tm+12*60+"am", \
+                    tm<12:00, tm+"am", \
+                    tm<13:00, tm+"pm", \
+                              tm-12*60+"pm")
+
+#################################################################
+# Function which removes a single leading zero from a string... #
+#################################################################
+
+FSET _no_lz(s) IIF(SUBSTR(s, 1, 1)=="0", SUBSTR(s, 2), s)
+
+#################################################################
+# Return the length of the daylight/night portion of a date,    #
+# in minutes.                                                   #
+#################################################################
+
+FSET _light_len(date) MAX(SUNSET(date)-SUNRISE(date), 0)
+FSET _dark_len(date) 1440-_light_len(date)
+
+# The length of daylight/night in hour and minute
+FSET _light_len_hour(date) _light_len(date)/60
+FSET _dark_len_hour(date) _dark_len(date)/60
+FSET _light_len_min(date) _light_len(date)%60
+FSET _dark_len_min(date) _dark_len(date)%60
+
+############################################################
+# Function to calculate number of years since a given year #
+# or number of months since a given month and year...      #
+############################################################
+
+FSET _yr_num(yr)		ORD(YEAR(TRIGDATE()) - yr)
+FSET _mo_num(mo, yr)		ORD(12 * (YEAR(TRIGDATE()) - yr) + \
+					MONNUM(TRIGDATE()) - mo)
+
+###########################################################
+#							  #
+# end of the part of Defs.rem				  #
+#							  #	
+###########################################################
+
+# set the longitude and latitude of WuHan
+SET $LongDeg -114
+SET $LongMin -25
+SET $LongSec -22
+SET $LatDeg 30
+SET $LatMin 30
+SET $LatSec 47
+
+
+
+###########################################################
+#
+# My personal reminders
+#
+
+# CGCL Labs clock
+# REM AT 10:45 MSG Test on AT 10:45
+REM Mon Tue Wed Thu Fri Sat Sun AT 11:46 MSG 11:45了。。打卡吃饭去！！
+REM Mon Tue Wed Thu Fri Sat Sun AT 13:35 MSG 13:35了。 中午打卡！
+REM Mon Tue Wed Thu Fri Sat Sun AT 17:46 MSG 17:46了。。打卡吃晚饭去！！
+
+
+# English learning
+# REM Mon Tue Wed Thu Fri Sat Sun AT 14:00 MSG PUTCLUB TIME!
+REM Mon Tue Wed Thu Fri Sat Sun AT 20:00 MSG PUTCLUB TIME!
+
+# shutdown at 22:40
+# Non KDE desktop
+# The .shutdown script will popup a mesagebox to ask confirm to shutdown
+# Default timeout will shutdown.
+
+#REM AT 22:20 RUN /home/lzq/.shutdown
+#REM AT 10:00 RUN /home/lzq/.shutdown
+
+# KDE desktop
+#REM AT 22:35 RUN qdbus org.kde.ksmserver /KSMServer logout 2 2 0
+
+
+# show sunrise sunset
+fset _srtd() coerce("STRING", _no_lz(_am_pm(sunrise(today()))))
+fset _sstd() coerce("STRING", _no_lz(_am_pm(sunset(today()))))
+fset _srtm() coerce("STRING", _no_lz(_am_pm(sunrise(today()+1))))
+fset _sstm() coerce("STRING", _no_lz(_am_pm(sunset(today()+1))))
+SET SunMsg "Sun is up today from " + _srtd() + " to " +  _sstd() + ". "
+SET DaylightMsg "Daylight length is " + _light_len_hour(today()) + ":" + _light_len_min(today()) + ", " + _light_len(today()) + " minutes. "
+SET SDMsg SunMsg + "\r\n" + DaylightMsg
+SET MoonMsg "Next full moon:" +  mon(moondate(2)) + " " + day(moondate(2)) + ", " + year(moondate(2))
+
+REM AT 20:00 MSG [SDMsg]
+REM AT 20:30 MSG [SDMSg]
+REM AT 21:00 MSg [MoonMsg]
+REM AT [sunrise(today())] MSG [SDMsg]
+REM AT [sunset(today())] MSG [SDMsg]
+
+REM AT 09:10 MSG [SDMsg]
+REM AT 10:30 MSG [SDMsg]
+
+REM AT 14:00 MSG [SDMsg]
+REM AT 16:00 MSG [SDMsg]

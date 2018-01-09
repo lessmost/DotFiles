@@ -1,0 +1,4 @@
+#!/bin/sh
+
+repo=${PWD##*/}
+git bundle create ~/data/Dropbox/repo/${repo}.bundle --all --tags --branches

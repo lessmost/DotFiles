@@ -1,0 +1,151 @@
+* Readme for org2blog/atom
+** Headers
+*** Purpose
+
+To contain user docs for org2blog/atom
+
+*** State
+
+** What it is
+An elisp package that lets you post from org-mode to Blogger and other
+blogs that use the Atom API
+
+Entry points are:
+ * org2blog/atom-post
+ * org2blog/atom-dir-add-new-photos
+
+
+** How to install it
+
+ * Install its dependencies
+   * Install org-mode
+   * Install g-client
+     * This will require 
+       * org-mode
+       * xsltproc (Or customize for another XSLT processor)
+       * curl
+   * Install tinydb
+
+ * Install org2blog/atom itself
+   * If you have elinstall, just load do-elinstall.el (It's a
+     script)  It will install.
+   * If you use `my-site-start.el', you can just symlink
+     "loaddefs.el" into your ~/.emacs.d/site-start.d/.  Give it a
+     name like 30org2blog/atom.el
+   * Failing that, have your .emacs load "subdirs.el".  Be sure to
+     tell it the path, because load-path won't be set up yet.
+   * If you don't have the patched g-client, apply the diff to g-client
+
+ * Configure it.  
+
+   This is still fluid; g-client always was a little obscure to
+   configure.  I've made it more automatic, but it could still be
+   easier.
+
+   * Optionally, customize `g-user-auth-function'
+     * If you have my library "password.el"
+       * customize `g-user-auth-function' to
+	 : org2blog/atom-password-get-uid+pass
+       * Call
+         : M-x tehom-password-create 
+	 and point it towards your Blogger account (or any other blog
+	 host that uses Atom API)
+
+     * For other password libraries, you may have to write some code
+       to make them work together.
+     * Otherwise, it will 
+   * You can also customize `org2blog/atom-l2r-alist-file' but you don't
+     need to.
+     * The default may require ~/.emacs.d/ to exist, I forget, but it
+       probably already exists.
+
+** How to use org2blog/atom 						    :userdoc:
+ * Have an account on the blog 
+
+ * Write a blog post as an org file
+
+   * You can use the usual org export file properties, such as #+AUTHOR:
+     and #+TITLE: 
+   * You can use the file property "#+BLOGLABELS:" to set labels for
+     the blog post.
+
+ * In that org buffer, command:
+   : M-x org2blog/atom-post
+   * That will put you in a gclient gblogger buffer with the post all
+     set up.  It should be ready to go, but you can inspect it
+     anyways.
+   * When you're satisfied, 
+     : C-c C-c
+   * It will post to blogger without further intervention.
+   * It will capture a mapping from the local filename to the remote
+     URL, so if you make other posts that link to it (the local file),
+     they will point correctly to it (the url of the respective blog
+     post)
+     * The same works for photos, as long as org2blog/atom is loaded when
+       they are uploaded.
+
+** Changes to g-client
+ * User-visible changes
+   * Some automatic capture of data, by only these interface functions:
+     * gphoto-feeds
+     * gphoto-photo-add
+     * gblogger-blog
+     * gblogger-new-entry
+   * Changed gphoto-photo-add to ask for an album name from the list
+     of albums, not an album id number.
+   * Added a more flexible way of getting authentication:  Just
+     customize (new variable) `g-user-auth-function'
+   * Hooks
+     * `g-app-afterpost-hook' which should be a function taking 2 args:
+       * The source filename
+       * The remote url
+   * gphoto treats non-jpgs
+     * Can find them in directories
+     * (Forthcoming) Sends the right Content-Type for them.
+     * Uses (both emacs-bundled packages) `image' and `image-file' to
+       know about image file types.
+   * g-load-defs.el now can be used as a symlink with my-site-start,
+     because it knows its real location.
+ * Internal additions:
+   * Added optional arguments to some interfaces
+     * Mostly to pass storers around
+       * g-app-send-buffer
+       * g-app-view
+   * Added internal variables
+     * To hold captured data
+       * gphoto-album-list
+       * gphoto-user-api-location
+     * To name new XSL scripts
+       * g-xsl-blogpost->url
+       * g-xsl-photopost->url
+       * g-xsl-feed->albums
+     * To hold a buffer-local storer until g-app posts
+       * g-app-storer
+   * Many commands associated with capturing data
+     * gblogger-blog-assign-data
+     * gphoto-feeds-assign-data
+     * g-app-setup-capture
+     * g-util-capture-x
+     * g-util-capture
+   * Created some convenience functions because I found myself
+     repeating code:
+     * g-app-shell-command
+     * g-app-build-command
+     * g-app-build-storer
+     * g-app-setup-posting
+     * g-app-succeeded
+     * g-display-common
+   * Changed g-auth to use customizable variable
+     `g-user-auth-function' for initial authentication.
+     * Added g-user-default-auth-function, that variable's default
+       value. 
+
+
+** Troubleshooting
+
+*** Errors
+
+ * "Requires a different version of org-mode.  See README.org"
+
+   * You're using an old version of org-mode.  It's probably best to
+    just upgrade.
